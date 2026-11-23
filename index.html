@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Cotejo de acentuación · 5.º A</title>
+<style>
+:root{color-scheme:light;--ink:#153044;--muted:#486579;--teal:#00625b;--line:#d4e1e8;--strong:#95abb7;--paper:#fff;--page:#eef4f6;--green:#075c44;--amber:#784500;--red:#91263b;font-family:system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--page)}
+main{max-width:1580px;margin:auto;padding:clamp(14px,3vw,42px)}
+header{padding:24px clamp(18px,3vw,34px);background:#123749;color:white;border-radius:20px 20px 0 0}
+header p{margin:0;color:#b9e3dc;font-weight:650}
+h1{font-size:clamp(25px,4vw,41px);letter-spacing:-.035em;margin:4px 0 0}
+.panel{padding:16px clamp(12px,2vw,24px);background:var(--paper);border:1px solid var(--line);border-top:0}
+.toolbar,.legend,.search{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar button,.search input{border:1px solid var(--strong);background:#fff;color:var(--ink);font:inherit;border-radius:8px;padding:8px 11px}
+.toolbar button.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+button{cursor:pointer}
+button:hover{filter:brightness(.94)}
+:focus-visible{outline:2px solid #136dc0;outline-offset:2px}
+.legend{margin-top:14px;font-size:.84rem;gap:9px 17px}
+.legend b{margin-right:4px}
+.yes{color:var(--green)} .partial{color:var(--amber)} .no{color:var(--red)}
+#status{min-height:1.35em;margin:10px 0 0;color:var(--muted);font-size:.84rem}
+.search{margin:0 0 10px;font-size:.88rem}
+.search input{max-width:100%;min-width:0}
+#count{color:var(--muted)}
+.board{overflow:auto;max-height:69vh;border:1px solid var(--strong);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:1250px;font-size:.83rem}
+col.student{width:115px} col.average{width:82px} col.metric{width:91px} col.notes{width:145px}
+th,td{padding:8px 5px;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--strong);background:var(--row,#fff)}
+thead th{position:sticky;top:0;z-index:3;background:#e4eff2;padding-block:10px;vertical-align:top}
+tr:nth-child(even){--row:#f6fafb}
+.student-cell{position:sticky;left:0;z-index:2;text-align:left;padding-left:9px}
+.average-cell{position:sticky;left:115px;z-index:2;background:#e7f5f2}
+thead .student-cell,thead .average-cell{z-index:5}
+thead .student-cell,thead .average-cell,thead .notes-cell{vertical-align:middle}
+.student-cell input,.notes-cell textarea{width:100%;font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:5px;background:var(--row,#fff)}
+.student-cell small,.average-cell small{display:block;color:var(--muted);font-size:.68rem}
+.average-cell output{display:block;font-weight:750;font-variant-numeric:tabular-nums;font-size:.95rem}
+.notes-cell textarea{resize:vertical;min-height:32px;vertical-align:middle}
+.metric-title{display:block;min-height:2.45em;line-height:1.15;margin:3px 0;font-size:.72rem}
+.metric-number{color:var(--teal);font-weight:800}
+.tiles{display:flex;justify-content:center;gap:2px;flex-wrap:wrap;font-size:.66rem}
+.tiles span{background:#fff;color:#15594e;border-radius:4px;padding:2px 3px}
+.tiles strong{background:#17665c;color:white;border-radius:4px;padding:2px 3px}
+.marks{display:flex;justify-content:center;gap:2px}
+.mark{width:25px;height:33px;padding:0;font-size:.95rem;font-weight:750;border:1px solid var(--line);border-radius:5px;background:#fff}
+.mark[aria-pressed=true].yes{background:#d6f3e5;border-color:var(--green)}
+.mark[aria-pressed=true].partial{background:#fff0ca;border-color:var(--amber)}
+.mark[aria-pressed=true].no{background:#fce4e8;border-color:var(--red)}
+.details{margin:14px 0 0;font-size:.85rem;line-height:1.5}
+.details summary{cursor:pointer;font-weight:700}
+.details p{margin:5px 0}
+@media(max-width:600px){main{padding:8px}.board{max-height:66vh}table{min-width:1221px}col.student{width:102px}col.average{width:64px}.average-cell{left:102px}.mark{height:39px}.panel{padding-inline:9px}}
+</style>
+</head>
+<body>
+<main>
+  <header><p>Lengua · 5.º A</p><h1>Lista de cotejo de acentuación</h1></header>
+  <section class="panel" aria-label="Importación y exportación">
+    <div class="toolbar">
+      <button class="primary" id="import-button" type="button">Importar lista o copia</button>
+      <input type="file" id="file" accept=".json,application/json" hidden>
+      <button id="export-json" type="button">Guardar copia JSON</button>
+      <button id="export-csv" type="button">Exportar CSV</button>
+    </div>
+    <div class="legend">
+      <span><b class="yes">✓</b>Logrado · 10</span><span><b class="partial">△</b>En proceso · 5</span>
+      <span><b class="no">✗</b>Aún no logrado · 0</span><span>En blanco · pendiente</span>
+      <span>Pulsa de nuevo una marca para quitarla.</span>
+    </div>
+    <p id="status" role="status"></p>
+  </section>
+  <section class="panel" aria-label="Registro de evaluación">
+    <div class="search"><label for="search">Buscar alumno</label><input id="search" type="search" autocomplete="off"><span id="count"></span></div>
+    <div class="board" tabindex="0" role="region" aria-label="Lista de cotejo. Desplázate para ver todos los indicadores.">
+      <table aria-label="Evaluación de 5.º A">
+        <colgroup><col class="student"><col class="average"><col class="metric" span="10"><col class="notes"></colgroup>
+        <thead><tr id="head"></tr></thead><tbody id="rows"></tbody>
+      </table>
+    </div>
+    <details class="details">
+      <summary>Indicador 9 · Análisis completo</summary>
+      <p>Separa en sílabas, señala la tónica, clasifica la palabra y justifica si lleva tilde con la regla correspondiente.</p>
+      <p><strong>lá-piz.</strong> La tónica es «lá». Es llana y lleva tilde porque termina en z.</p>
+      <p><strong>re-loj.</strong> La tónica es «loj». Es aguda y no lleva tilde porque termina en j.</p>
+    </details>
+  </section>
+</main>
+<script>
+"use strict";
+const indicators = [
+  ["Separa y cuenta", ["sí", "la", "ba"]],
+  ["Localiza la tónica", ["*tó", "ni", "ca"]],
+  ["Clasifica", ["reloj", "*aguda"]],
+  ["Explica la regla", ["*aguda + n"]],
+  ["Aplica y justifica", ["*camión", "reloj"]],
+  ["Diptongo e hiato", ["ai-re", "*pa-ís"]],
+  ["Tilde diacrítica", ["*tú", "tu"]],
+  ["Corrige errores", ["lapiz", "→", "*lápiz"]],
+  ["Análisis completo", ["*lá-piz", "¿tilde?"]],
+  ["Revisa su texto", ["Mi texto", "*✓"]]
+];
+const levels = [
+  { score: 10, symbol: "✓", label: "Logrado", style: "yes" },
+  { score: 5, symbol: "△", label: "En proceso", style: "partial" },
+  { score: 0, symbol: "✗", label: "Aún no logrado", style: "no" }
+];
+const key = "cotejo-acentuacion-5a-v1";
+const rowCount = 21;
+const format = new Intl.NumberFormat("es-ES", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const byId = id => document.getElementById(id);
+function make(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+function emptyRows() {
+  return Array.from({length: rowCount}, () => ({
+    name: "", marks: Array(indicators.length).fill(null), notes: ""
+  }));
+}
+function validRows(data) {
+  if (data?.version !== 1 || !Array.isArray(data.students) || data.students.length !== rowCount) {
+    throw new Error("El archivo debe ser una lista o copia JSON de esta aplicación para 21 alumnos.");
+  }
+  return data.students.map(student => {
+    if (!student || typeof student.name !== "string" || student.name.length > 80 ||
+        typeof student.notes !== "string" || student.notes.length > 3000 ||
+        !Array.isArray(student.marks) || student.marks.length !== indicators.length ||
+        !student.marks.every(mark => [null, 0, 5, 10].includes(mark))) {
+      throw new Error("La copia contiene una fila con un formato incorrecto.");
+    }
+    return {name: student.name, notes: student.notes, marks: [...student.marks]};
+  });
+}
+let students = emptyRows();
+let initialStatus = "Importa el grupo de 5.º A o escribe los nombres en la tabla.";
+try {
+  const stored = localStorage.getItem(key);
+  if (stored) {
+    students = validRows(JSON.parse(stored));
+    initialStatus = "Registro recuperado de este navegador.";
+  }
+} catch {
+  initialStatus = "No se pudo recuperar el guardado local. Puedes importar una copia JSON.";
+}
+byId("status").textContent = initialStatus;
+function snapshot() {
+  return {version: 1, students};
+}
+function save(message = "Cambios guardados en este navegador.") {
+  try {
+    localStorage.setItem(key, JSON.stringify(snapshot()));
+    byId("status").textContent = message;
+  } catch {
+    byId("status").textContent = "El navegador no permite guardar aquí. Descarga una copia JSON para conservar los cambios.";
+  }
+}
+function mean(marks) {
+  const scored = marks.filter(mark => mark !== null);
+  return {
+    total: scored.length,
+    value: scored.length ? scored.reduce((sum, mark) => sum + mark, 0) / scored.length : null
+  };
+}
+function heading(className, title) {
+  const cell = make("th", className, title);
+  cell.scope = "col";
+  byId("head").append(cell);
+  return cell;
+}
+function renderHead() {
+  heading("student-cell", "N.º · Nombre");
+  heading("average-cell", "Nota media").append(make("small", "", "Sobre 10"));
+  indicators.forEach(([title, tiles], index) => {
+    const cell = heading("", "");
+    cell.append(make("span", "metric-number", index + 1), make("span", "metric-title", title));
+    const group = make("div", "tiles");
+    tiles.forEach(tile => group.append(tile.startsWith("*") ?
+      make("strong", "", tile.slice(1)) : make("span", "", tile)));
+    cell.append(group);
+  });
+  heading("notes-cell", "Observaciones");
+}
+function renderRows() {
+  const body = byId("rows");
+  body.replaceChildren();
+  students.forEach((student, index) => {
+    const row = make("tr");
+    const nameCell = make("td", "student-cell");
+    nameCell.append(make("small", "", "N.º " + (index + 1)));
+    const name = make("input");
+    name.type = "text";
+    name.maxLength = 80;
+    name.autocomplete = "off";
+    name.placeholder = "Nombre";
+    name.value = student.name;
+    name.setAttribute("aria-label", "Nombre del alumno " + (index + 1));
+    name.addEventListener("input", () => { student.name = name.value; save(); });
+    name.addEventListener("change", filterRows);
+    nameCell.append(name);
+    row.append(nameCell);
+    const averageCell = make("td", "average-cell");
+    const average = make("output");
+    const progress = make("small");
+    function updateAverage() {
+      const result = mean(student.marks);
+      average.value = result.value === null ? "—" : format.format(result.value);
+      progress.textContent = result.total === indicators.length ? "Final" :
+        result.total ? "Provisional · " + result.total + "/10" : "Pendiente";
+    }
+    updateAverage();
+    averageCell.append(average, progress);
+    row.append(averageCell);
+    indicators.forEach(([title], metric) => {
+      const cell = make("td");
+      const group = make("div", "marks");
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", (index + 1) + " · Indicador " + (metric + 1) + " · " + title);
+      const buttons = levels.map(level => {
+        const button = make("button", "mark " + level.style, level.symbol);
+        button.type = "button";
+        button.title = level.label;
+        button.setAttribute("aria-label", level.label);
+        button.setAttribute("aria-pressed", student.marks[metric] === level.score);
+        button.addEventListener("click", () => {
+          student.marks[metric] = student.marks[metric] === level.score ? null : level.score;
+          buttons.forEach((control, position) =>
+            control.setAttribute("aria-pressed", student.marks[metric] === levels[position].score));
+          updateAverage();
+          save();
+        });
+        return button;
+      });
+      group.append(...buttons);
+      cell.append(group);
+      row.append(cell);
+    });
+    const notesCell = make("td", "notes-cell");
+    const notes = make("textarea");
+    notes.rows = 1;
+    notes.maxLength = 3000;
+    notes.value = student.notes;
+    notes.setAttribute("aria-label", "Observaciones del alumno " + (index + 1));
+    notes.addEventListener("input", () => { student.notes = notes.value; save(); });
+    notesCell.append(notes);
+    row.append(notesCell);
+    body.append(row);
+  });
+  filterRows();
+}
+function normalized(text) {
+  return text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+}
+function filterRows() {
+  const query = normalized(byId("search").value);
+  let visible = 0;
+  [...byId("rows").rows].forEach((row, index) => {
+    row.hidden = !normalized((index + 1) + " " + students[index].name).includes(query);
+    if (!row.hidden) visible += 1;
+  });
+  byId("count").textContent = visible + " de " + rowCount + " filas";
+}
+function download(filename, text, type) {
+  const href = URL.createObjectURL(new Blob([text], {type}));
+  const link = make("a");
+  link.href = href;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
+}
+function csvField(value) {
+  const text = String(value ?? "");
+  const safe = /^[\s]*[=+@-]|^[\t\r\n]/.test(text) ? "'" + text : text;
+  return '"' + safe.replaceAll('"', '""') + '"';
+}
+function exportCsv() {
+  const titles = ["N.º", "Nombre", "Nota media /10", "Tipo de media",
+    ...indicators.map(([title], index) => (index + 1) + ". " + title), "Observaciones"];
+  const rows = students.map((student, index) => {
+    const result = mean(student.marks);
+    return [
+      index + 1, student.name, result.value === null ? "" : format.format(result.value),
+      result.total === indicators.length ? "Final" : result.total ? "Provisional" : "",
+      ...student.marks, student.notes
+    ];
+  });
+  const csv = [titles, ...rows].map(row => row.map(csvField).join(";")).join("\r\n");
+  download("Cotejo_acentuacion_5A.csv", "\ufeff" + csv, "text/csv;charset=utf-8");
+}
+async function importFile(event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    if (file.size > 500000) throw new Error("El archivo supera el tamaño admitido para esta lista.");
+    const imported = validRows(JSON.parse(await file.text()));
+    const hasData = students.some(student => student.name.trim() || student.notes.trim() ||
+      student.marks.some(mark => mark !== null));
+    if (hasData && !window.confirm("La importación sustituirá el registro actual. ¿Quieres continuar?")) return;
+    students = imported;
+    byId("search").value = "";
+    renderRows();
+    save("Lista importada y guardada en este navegador.");
+  } catch (error) {
+    byId("status").textContent = error instanceof SyntaxError ?
+      "El archivo no contiene un JSON válido." : error.message;
+  } finally {
+    input.value = "";
+  }
+}
+byId("search").addEventListener("input", filterRows);
+byId("import-button").addEventListener("click", () => byId("file").click());
+byId("file").addEventListener("change", importFile);
+byId("export-json").addEventListener("click", () =>
+  download("Copia_cotejo_acentuacion_5A.json", JSON.stringify(snapshot(), null, 2), "application/json"));
+byId("export-csv").addEventListener("click", exportCsv);
+renderHead();
+renderRows();
+</script>
+</body>
+</html>
